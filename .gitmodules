@@ -1,3 +1,6 @@
 [submodule "pointnet2-tensorflow2"]
 	path = plusplus
 	url = https://github.com/dgriffiths3/pointnet2-tensorflow2
+[submodule "RandLA-Net"]
+	path = RandLA-Net
+	url = https://github.com/QingyongHu/RandLA-Net.git

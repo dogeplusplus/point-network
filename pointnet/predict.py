@@ -8,10 +8,10 @@ NUM_CLASSES = 10
 BATCH_SIZE = 32
 NUM_POINTS = 2048
 
-train_points = np.load("../train_points.npy").astype(np.float32)
-train_labels = np.load("../train_labels.npy")
-test_points = np.load("../test_points.npy").astype(np.float32)
-test_labels = np.load("../test_labels.npy")
+train_points = np.load("../data/train_points.npy").astype(np.float32)
+train_labels = np.load("../data/train_labels.npy")
+test_points = np.load("../data/test_points.npy").astype(np.float32)
+test_labels = np.load("../data/test_labels.npy")
 
 with open('../class_map.json', 'r') as f:
     CLASS_MAP = json.load(f)

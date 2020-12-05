@@ -59,10 +59,10 @@ def parse_dataset(num_points=2048):
 NUM_POINTS = 2048
 train_points, test_points, train_labels, test_labels, CLASS_MAP = parse_dataset(NUM_POINTS)
 
-np.save('../train_points.npy', train_points)
-np.save('../test_points.npy', test_points)
-np.save('../train_labels.npy', train_labels)
-np.save('../test_labels.npy', test_labels)
+np.save('../data/train_points.npy', train_points)
+np.save('../data/test_points.npy', test_points)
+np.save('../data/train_labels.npy', train_labels)
+np.save('../data/test_labels.npy', test_labels)
 
 with open('../class_map.json', 'w') as f:
     json.dump(CLASS_MAP, f)

@@ -12,10 +12,10 @@ NUM_CLASSES = 10
 BATCH_SIZE = 32
 NUM_POINTS = 2048
 
-train_points = np.load("../train_points.npy").astype(np.float32)
-train_labels = np.load("../train_labels.npy")
-test_points = np.load("../test_points.npy").astype(np.float32)
-test_labels = np.load("../test_labels.npy")
+train_points = np.load("../data/train_points.npy").astype(np.float32)
+train_labels = np.load("../data/train_labels.npy")
+test_points = np.load("../data/test_points.npy").astype(np.float32)
+test_labels = np.load("../data/test_labels.npy")
 
 with open('../class_map.json', 'r') as f:
     CLASS_MAP = json.load(f)
@@ -81,31 +81,57 @@ def tnet(inputs, num_features):
     return Dot(axes=(2, 1))([inputs, feat_T])
 
 
-inputs = Input(shape=(NUM_POINTS, 3))
+def classification_model():
+    inputs = Input(shape=(NUM_POINTS, 3))
 
-x = tnet(inputs, 3)
-x = conv_bn(x, 32)
-x = conv_bn(x, 32)
-x = tnet(x, 32)
-x = conv_bn(x, 32)
-x = conv_bn(x, 64)
-x = conv_bn(x, 512)
-x = GlobalMaxPooling1D()(x)
-x = dense_bn(x, 256)
-x = Dropout(0.3)(x)
-x = dense_bn(x, 128)
-x = Dropout(0.3)(x)
+    x = tnet(inputs, 3)
+    x = conv_bn(x, 32)
+    x = conv_bn(x, 32)
+    x = tnet(x, 32)
+    x = conv_bn(x, 32)
+    x = conv_bn(x, 64)
+    x = conv_bn(x, 512)
+    x = GlobalMaxPooling1D()(x)
+    x = dense_bn(x, 256)
+    x = Dropout(0.3)(x)
+    x = dense_bn(x, 128)
+    x = Dropout(0.3)(x)
 
-outputs = Dense(NUM_CLASSES, activation='softmax')(x)
+    outputs = Dense(NUM_CLASSES, activation='softmax')(x)
 
-model = Model(inputs=inputs, outputs=outputs, name='pointnet')
+    model = Model(inputs=inputs, outputs=outputs, name='pointnet')
+    return model
+
+def segmentation_model(num_classes):
+    inputs = Input(shape=(NUM_POINTS, 3))
+
+    x = tnet(inputs, 3)
+    x = conv_bn(x, 32)
+    x = conv_bn(x, 32)
+    concat = tnet(x, 32)
+    x = conv_bn(concat, 32)
+    x = conv_bn(x, 64)
+    x = conv_bn(x, 512)
+    global_vector = GlobalMaxPooling1D()(x)
+    global_repeat = tf.tile(global_vector[:, tf.newaxis, ...], (1, NUM_POINTS, 1))
+    x = tf.keras.layers.Concatenate()([concat, global_repeat])
+    x = conv_bn(x, 256)
+    x = conv_bn(x, 128)
+    x = conv_bn(x, 64)
+    x = conv_bn(x, 64)
+    outputs = conv_bn(x, num_classes)
+
+    model = Model(inputs=inputs, outputs=outputs, name='pointnet_seg')
+    return model
+
+model = segmentation_model(3)
 print(model.summary())
 
-model.compile(
-    loss='sparse_categorical_crossentropy',
-    optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-    metrics=['sparse_categorical_accuracy']
-)
-
-model.fit(train_dataset, epochs=2, validation_data=test_dataset)
-model.save('model_instances/point_net')
+# model.compile(
+#     loss='sparse_categorical_crossentropy',
+#     optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+#     metrics=['sparse_categorical_accuracy']
+# )
+#
+# model.fit(train_dataset, epochs=2, validation_data=test_dataset)
+# model.save('model_instances/point_net')

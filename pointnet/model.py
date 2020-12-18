@@ -103,7 +103,7 @@ def classification_model():
     return model
 
 def segmentation_model(num_classes):
-    inputs = Input(shape=(NUM_POINTS, 3))
+    inputs = Input(shape=(None, 3))
 
     x = tnet(inputs, 3)
     x = conv_bn(x, 32)
@@ -126,6 +126,7 @@ def segmentation_model(num_classes):
 
 model = segmentation_model(3)
 print(model.summary())
+model.save('testy')
 
 # model.compile(
 #     loss='sparse_categorical_crossentropy',
